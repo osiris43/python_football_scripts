@@ -40,14 +40,16 @@ class Game(object):
     self.city = city
     self.gamedate = date
 
-def main():
-  f = open('2014_preseason_week1.html', 'r+')
+def main(seasonType, week):
+  fn = "{0}_{1}_week{2}.html".format(globalyear, seasonType, week)
+  print fn
+  f = open(fn, 'r+')
   soup = BeautifulSoup(f.read())
   weektables = get_weektables(soup)
-  get_weeks(weektables)
+  get_weeks(weektables, week)
   write_file()
 
-def get_weeks(weektables):
+def get_weeks(weektables, week):
 
   for table in weektables:
     games = []
@@ -60,9 +62,7 @@ def get_weeks(weektables):
         continue
       print rowtype
 
-      if rowtype == 'stathead':
-        week = row.td.contents[1].string.split(' ')[1]
-      elif rowtype == 'colhead':
+      if rowtype == 'colhead':
         date_string = row.find('td', {'width': '170'}).string
       elif len(rowtype.split(' ')) > 1:
         print row.td
@@ -95,7 +95,7 @@ def get_weektables(soup):
   return weeks
 
 def write_file():
-  results = open('results.txt', 'w+')
+  results = open('results.txt', 'a')
 
   for k,v in schedule.iteritems():
     for game in v:
@@ -103,10 +103,10 @@ def write_file():
       # The second creates one for Sports Pool Paradise.
       #results.write("exec GameINS %s, %s, '%s', '%s', '%s', '%s', '%s', '%s'\n" %
       #              (globalyear, k,game.gamedate, game.city, game.home, game.home_mascot, game.away, game.away_mascot))
-      results.write("select game_insert('2014-2015', %s, '%s %s', '%s %s', 0.0, 0.0, '%s', 'Nflgame');\n" %
+      results.write("select game_insert('2014-2015 Preseason', %s, '%s %s', '%s %s', 0.0, 0.0, '%s', 'Nflgame');\n" %
                     (k, game.home, game.home_mascot, game.away, game.away_mascot, time.strftime("%Y-%m-%dT%H:%M:%S", game.gamedate.utctimetuple())))
 
   results.close()
 
 if __name__ == '__main__':
-  main()
+  main("preseason", 5)
